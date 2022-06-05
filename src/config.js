@@ -9,7 +9,7 @@ const config = {
   owner : process.env.REACT_APP_OWNER,
   contact: process.env.REACT_APP_CONATCT,
   billing: {
-    account_nno : process.env.REACT_APP_BILLING_NO,
+    account_no : process.env.REACT_APP_BILLING_NO,
     bank_name : process.env.REACT_APP_BILLING_BANK
   }
 }

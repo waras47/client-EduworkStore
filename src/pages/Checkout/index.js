@@ -1,9 +1,15 @@
-import { FaAddressCard, FaArrowLeft, FaArrowRight, FaCartPlus, FaInfoCircle, FaRegCheckCircle } from '@meronex/icons/fa'
+import { FaAddressCard, FaArrowLeft, FaArrowRight, FaCartPlus, FaInfoCircle, FaRegCheckCircle, FaUserAlt } from '@meronex/icons/fa'
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link,  Redirect} from 'react-router-dom'
 import { Button, LayoutOne, Responsive, Steps, Table, Text } from 'upkit'
 import TopBar from '../../components/TopBar'
 import { useHistory } from 'react-router'
+import { useDispatch, useSelector } from 'react-redux'
+import { config } from '../../config'
+import { formatRupiah, sumPrice } from '../../app/utils'
+import {useAddressData} from  '../../app/hooks/address'
+import { createOrder } from '../../app/api/order'
+import {clearItems} from '../../app/features/Cart/action'
 
 const IconWrapper = ({children}) => {
   return <div className="text-3xl flex justify-center ">
@@ -31,7 +37,7 @@ const columns = [
   { 
     Header: 'Nama produk', 
     accessor: item => <div className="flex items-center">
-      <img src={item.image_url} width={48} alt={item.name}/>
+      <img src={`${config.api_host}/images/products/${item.image_url}`} width={48} alt={item.name}/>
       {item.name}
     </div>
   },
@@ -42,14 +48,14 @@ const columns = [
   {
     Header: 'Harga satuan', 
     id: 'price',
-    accessor: item => <span> @ {item.price} </span>
+    accessor: item => <span> @ {formatRupiah(item.price)} </span>
   },
   { 
     Header: 'Harga total', 
     id: 'subtotal', 
     accessor: item => {
     return <div>
-      { item.price * item.qty}
+      { formatRupiah(item.price * item.qty)}
     </div>
     }
   }
@@ -73,27 +79,28 @@ const addressColumns = [
 export default function Checkout() {
   const [ activeStep, setActiveStep ] = React.useState(0);
   const [ selectedAddress, setSelectedAddress ] = React.useState(null);
+  const cart = useSelector(state => state.cart);
   const history = useHistory();
-  const items = [
-    {name: 'Nasi Goreng Rendang', image_url: 'https://source.unsplash.com/400x300/?food' , id: 1, price: 32000, qty: 1},
-    {name: 'Nasi Goreng Biasa', image_url: 'https://source.unsplash.com/400x300/?food' , id: 2, price: 32000, qty: 1},
-  ];
-
-  const data = [
-    {
-      "_id": "615aece526f5dccb18fd47de",
-      "nama": "Edi Hartono",
-      "kelurahan": "KARANGSONO",
-      "kecamatan": "MRANGGEN",
-      "kabupaten": "KABUPATEN DEMAK",
-      "provinsi": "JAWA TENGAH",
-      "detail": "depan sd karangsono 3",
-      "user": "615a97b213e3a8ef341b4cf8",
-      "createdAt": "2021-10-04T12:00:37.963Z",
-      "updatedAt": "2021-10-04T12:00:37.963Z",
-      "__v": 0
+  const auth = useSelector(state => state.auth);
+  const {count, data, limit, page,  setPage, status} = useAddressData();
+  const dispatch = useDispatch();
+  const handleCreateOrder = async () => {
+    let payload =  {
+      delivery_address: selectedAddress._id,
+      delivery_fee : config.global_ongkir
     }
-  ]
+
+    const { data} = await createOrder(payload);
+    if(!data.error) {
+      dispatch(clearItems());
+      history.push(`/invoice/${data._id}`)
+    }
+  }
+
+
+  if(!cart) {
+    return <Redirect to ="/" />
+  }
   return (
     <LayoutOne>
       <TopBar />
@@ -106,19 +113,19 @@ export default function Checkout() {
           <br/> <br/>
           <Table 
           color='indigo'
-            items={items}
+            items={cart}
             columns={columns}
-            perPage={0}
+            perPage={cart.length}
             showPagination={false}
           />
           <br/>
           <div className="text-right">
             <Text as="h4">
-              Subtotal: {'Rp. 32.000'}
+              Subtotal: {formatRupiah(sumPrice(cart))}
             </Text> 
 
             <br/>
-            {/* {
+            {
               !auth.user ?
               <Button 
                 onClick={_ => history.push('/login')}
@@ -126,13 +133,13 @@ export default function Checkout() {
                 iconAfter={<FaUserAlt/>}
               > Login to Checkout</Button> :
               
-            } */}
-
               <Button 
                 onClick={_ => setActiveStep(activeStep + 1)}
                 color="indigo"
                 iconAfter={<FaArrowRight/>}
               > Selanjutnya </Button>
+            }
+
           </div>
         </div>
       }
@@ -143,11 +150,11 @@ export default function Checkout() {
           color='indigo'
           items={data}
           columns={addressColumns}
-          perPage={10}
-          page={1}
-          onPageChange={() => {}}
-          totalItems={10}
-          isLoading={false}
+          perPage={limit}
+          page={page}
+          onPageChange={page => setPage(page)}
+          totalItems={count}
+          isLoading={status === 'process'}
           selectable
           primaryKey={'_id'}
           selectedRow={selectedAddress}
@@ -210,9 +217,9 @@ export default function Checkout() {
               {selectedAddress.detail}
 
              </div>},
-             {label: 'Subtotal', value: 'Rp. 32.000'}, 
-             {label: 'Ongkir', value: 'Rp. 20.000'}, 
-             {label: 'Total', value: <b>{'Rp. 42.000'}</b>}, 
+             {label: 'Subtotal', value: formatRupiah(sumPrice(cart))}, 
+             {label: 'Ongkir', value: formatRupiah(config.global_ongkir)}, 
+             {label: 'Total', value: <b>{formatRupiah(parseInt(sumPrice(cart)) + parseInt(config.global_ongkir))}</b>}, 
            ]}
            showPagination={false}
          />
@@ -231,7 +238,7 @@ export default function Checkout() {
              color="indigo"
              size="large"
              iconBefore={<FaRegCheckCircle/>}
-             onClick={() => history.push('/invoice/615b280b007adecb044c7745')}
+             onClick={handleCreateOrder}
            >
               Bayar
            </Button>

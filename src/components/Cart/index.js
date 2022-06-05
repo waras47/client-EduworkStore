@@ -2,6 +2,8 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Button, CardItem, Text } from 'upkit'
 import { FaArrowRight, FaCartPlus } from '@meronex/icons/fa'
+import { config } from '../../config'
+import {formatRupiah, sumPrice} from '../../app/utils/index'
 
 function Cart({items, onItemInc, onItemDec, onCheckout}) {
   return (
@@ -14,7 +16,7 @@ function Cart({items, onItemInc, onItemDec, onCheckout}) {
           </div>
         </div>
 
-        <Text as="h5">Total: Rp. 32.000</Text>
+        <Text as="h5">Total: {formatRupiah(sumPrice(items))}</Text>
         <Button 
           color = 'indigo'
           text="Checkout" 
@@ -33,10 +35,10 @@ function Cart({items, onItemInc, onItemDec, onCheckout}) {
               return (
                 <div className="mb-2" key={i}>
                   <CardItem 
-                    imgUrl={`https://source.unsplash.com/400x300/?food`} 
-                    name={'Testing'} 
-                    qty={1} 
-                    color="orange"
+                    imgUrl={`${config.api_host}/images/products/${item.image_url}`} 
+                    name={item.name} 
+                    qty={item.qty} 
+                    color="blue"
                     onInc={_ => onItemInc(item)}
                     onDec={_ => onItemDec(item)}
                   />
