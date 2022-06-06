@@ -78,7 +78,7 @@ export default function Home() {
                           <CardProduct
                             color='indigo' 
                             title={product.name} 
-                            imgUrl={`${config.api_host}images/products/${product.image_url}`}
+                            imgUrl={`${config.api_host}/images/products/${product.image_url}`}
                             price={product.price}
                             onAddToCart={_ => dispatch(addItem(product))}
                           />

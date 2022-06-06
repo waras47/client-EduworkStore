@@ -7,7 +7,7 @@ export default function cartReducer(state = initialState, {type, payload}) {
 
     case ADD_ITEM :
       if(state.find(item => item._id === payload.item_id)){
-        return state.map(item => ({...item, qty: item._id === payload.item._id ? item.qty + 1 : item.qty}))
+        return state.map(item => ({...item, qty: item._id === payload.item._id ? item.qty + 1 : item.qty}));
       }else{
        return [...state, {...payload.item, qty: 1}] 
       }
@@ -18,13 +18,13 @@ export default function cartReducer(state = initialState, {type, payload}) {
         .filter(item => item.qty > 0);
 
     case CLEAR_ITEMS : 
-      return []
+      return [];
     
     case  SET_ITEMS :
-      return payload.item
+      return payload.items
 
     default :
-    return state
+      return state
   } 
 }
 

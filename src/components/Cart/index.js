@@ -63,5 +63,5 @@ Cart.propTypes = {
   onCheckout: PropTypes.func,
 }
 
-export default Cart
+export default Cart;
 

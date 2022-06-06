@@ -53,13 +53,13 @@ export default function Register() {
           <FormControl errorMessage={errors.full_name?.message}>
             <InputText {...register('full_name', rules.full_name)} placeholder="Nama Lengkap" fitContainer  />
           </FormControl>
-          <FormControl errorMessage={errors.EMAIL?.message}>
+          <FormControl errorMessage={errors.email?.message}>
             <InputText {...register('email', rules.email)} placeholder="Email" fitContainer />
           </FormControl>
           <FormControl errorMessage={errors.password?.message}>
             <InputPassword {...register('password', rules.password)} placeholder="Password" fitContainer />
           </FormControl>
-          <FormControl errorMessage={errors.EMAIL.password_confirmation?.message}>
+          <FormControl errorMessage={errors.email?.password_confirmation?.message}>
             <InputPassword {...register('password_confirmation', rules.password_confirmation)} placeholder="Konfirmasi Password" fitContainer />
           </FormControl>
           <Button 
